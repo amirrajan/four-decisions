@@ -20129,6 +20129,8 @@
 	
 	  if (!gameState.cards[nextScene]) return false;
 	
+	  var lastScene = gameState.currentCard;
+	
 	  gameState.currentCard = {
 	    id: nextScene,
 	    text: gameState.cards[nextScene].text,
@@ -20138,7 +20140,7 @@
 	    right: gameState.cards[nextScene].right
 	  };
 	
-	  setBackNavigation(gameState);
+	  setBackNavigation(gameState.currentCard, lastScene);
 	
 	  return gameState;
 	}
@@ -20152,6 +20154,8 @@
 	
 	  if (!nextScene) return false;
 	
+	  var lastScene = gameState.currentCard;
+	
 	  gameState.currentCard = {
 	    id: nextScene.id,
 	    text: nextScene.text,
@@ -20161,16 +20165,27 @@
 	    right: nextScene.right
 	  };
 	
-	  setBackNavigation(gameState);
+	  setBackNavigation(gameState.currentCard, lastScene);
 	
 	  return gameState;
 	}
 	
-	function setBackNavigation(gameState) {
-	  if (gameState.currentCard.up && gameState.currentCard.up.text == 'Back.') gameState.currentCard.up.nextInline = gameState.currentCard;
-	  if (gameState.currentCard.left && gameState.currentCard.left.text == 'Back.') gameState.currentCard.left.nextInline = gameState.currentCard;
-	  if (gameState.currentCard.right && gameState.currentCard.right.text == 'Back.') gameState.currentCard.right.nextInline = gameState.currentCard;
-	  if (gameState.currentCard.down && gameState.currentCard.down.text == 'Back.') gameState.currentCard.down.nextInline = gameState.currentCard;
+	function setBackNavigation(scene, backScene) {
+	  if (scene.up && scene.up.text == 'Back.' && !scene.up.nextInline) {
+	    scene.up.nextInline = backScene;
+	  }
+	
+	  if (scene.left && scene.left.text == 'Back.' && !scene.left.nextInline) {
+	    scene.left.nextInline = backScene;
+	  }
+	
+	  if (scene.right && scene.right.text == 'Back.' && !scene.right.nextInline) {
+	    scene.right.nextInline = backScene;
+	  }
+	
+	  if (scene.down && scene.down.text == 'Back.' && !scene.down.nextInline) {
+	    scene.down.nextInline = backScene;
+	  }
 	}
 	
 	function cards() {
