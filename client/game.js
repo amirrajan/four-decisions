@@ -66,14 +66,14 @@ function setNextSceneByInline(direction, gameState) {
 function cards() {
   return {
     'first-message': {
-      text: ['serenity:',
-             'communications repaired.',
-             'mark: stable, in stasus.',
-             'simone: stable, in stasus.',
-             'will: no heartbeat.',
-             'shiobhan: stable, in stasus.',
-             'awaiting commands.'],
-      right: { text: 'command: reanimate crew',
+      text: ['Serenity:',
+             'Communications repaired.',
+             'Mark: Stable. In stasus.',
+             'Simone: Stable. In stasus.',
+             'Will: No heartbeat.',
+             'Shiobhan: Stable, In stasus.',
+             'Awaiting commands.'],
+      right: { text: 'Command: Reanimate crew.',
                next: 'adrenaline-injected' }
     },
     'first-crew-status': {
@@ -81,77 +81,72 @@ function cards() {
              'simone: stable, in stasus.',
              'will: no heartbeat.',
              'shiobhan: stable, in stasus.'],
-      left: { text: 'back', next: 'first-message' }
+      left: { text: 'Back.', next: 'first-message' }
     },
     'adrenaline-injected': {
-      text: ['command has been sent.',
-             'waiting for response.'],
-      right: { text: 'sleep', next: 'day-1.5' }
+      text: ['Command has been sent.',
+             'Waiting for response.'],
+      right: { text: 'Wait.', next: 'day-1.5' }
     },
     'day-1.5': {
       text: [
-        'a terminal light blinks.',
-        'a distress signal.'
+        'A terminal light blinks.',
+        'A distress signal.'
       ],
-      right: { text: 'read distress', next: 'day-1.5-message' },
-      down: { text: 'terminal',
+      right: { text: 'Read distress.', next: 'day-1.5-message' },
+      down: { text: 'Terminal.',
               nextInline: terminalScene('day-1.5-terminal',
                                         'day-1.5') }
     },
     'day-1.5-message': {
       text: [
-        'error code: 0x09'
+        'Status: 0x09, 0xAA, 0xF8.'
       ],
-      left: { text: 'back', next: 'day-1.5' },
-      right: { text: 'wait', next: 'day-2' },
-      down: { text: 'terminal',
+      left: { text: 'Back.', next: 'day-1.5' },
+      right: { text: 'Wait.', next: 'day-2' },
+      down: { text: 'Terminal.',
               nextInline: terminalScene('day-1.5-message-terminal',
                                         'day-1.5-message') }
     },
     'day-2': {
       text: [
-        'a terminal light blinks.',
-        'a distress signal.'
+        'A terminal light blinks.',
+        'A distress signal.'
       ],
-      right: { text: 'read distress', next: 'day-2-message' }
+      right: { text: 'Read distress.', next: 'day-2-message' }
     },
     'day-2-message': {
       text: [
-        'mark:',
-        'ne1 there!?'
+        'Anyone there?!'
       ],
-      right: { text: 'reply', next: 'day-2-reply' }
+      right: { text: 'Reply.', next: 'day-2-reply' }
     },
     'day-2-reply': {
-      text: ["reply:",
-             "yes, i'm here.",
-             'we thought we lost serenity.',
-             "it's been fifteen years."],
-      right: { text: 'send', next: 'day-2-reply-too-long' }
+      text: ["Yes, I'm here.",
+             'We thought we lost Serenity.',
+             "It's been fifteen years.",
+             "Who is speaking??"],
+      right: { text: 'Send reply.', next: 'day-2-reply-too-long' }
     },
     'day-2-reply-too-long': {
-      text: ['error: reply too long to send.',
-             'please shorten to twenty characters.'],
-      right: { text: 'to mark: "yes. here. ok??"', next: 'day-2-end' }
+      text: ['Error: Reply too long to send.',
+             'Please shorten to twenty characters.'],
+      right: { text: '"Yes. Here. Ok? Who?"', next: 'day-2-end' }
     },
     'day-2-end': {
-      text: ['message sent.',
-             'waiting for response.'],
-      right: { text: 'sleep', next: 'day-3' }
+      text: ['Message sent.',
+             'Waiting for response.'],
+      right: { text: 'Wait.', next: 'day-3' }
     },
     'day-3': {
       text: [
-        'a terminal light blinks.',
-        'a distress signal.'
+        'A terminal light blinks.',
+        'A distress signal.'
       ],
-      right: { text: 'read distress', next: 'day-3-message' },
-      right: { text: 'read distress', next: 'day-3-message' }
+      right: { text: 'Read distress.', next: 'day-3-message' },
     },
     'day-3-message': {
-      text: [
-        'mark:',
-        'will dead. sh si ok.'
-      ],
+      text: ['Will dead. sh si ok.'],
       left: { text: 'back', next: 'day-3' },
       right: { text: 'reply', next: 'day-3-reply' }
     },
@@ -167,17 +162,39 @@ function cards() {
 }
 
 function terminalScene(id, backScene) {
-  return {
-    id: id,
-    text: [
-      "light speed terminal TM:",
-      'select command.'
-    ],
-    right: { text: 'error codes', next: 'error-codes' },
-    down:  { text: 'schematics', next: 'schematics' },
-    up:    { text: 'search', next: 'search' },
-    left:  { text: 'back', next: backScene }
+  var result = {};
+
+  result.id = id;
+
+  result.text = [
+    "light speed terminal TM:",
+    'select command.'
+  ];
+
+  var statusCodesScene = {
+    text: 'Status codes.',
+    nextInline: {
+      text: ['0x09: communication module fatal failure. message length serverely compromised.',
+             '0xAA: navigation module fatal failure. unable to navigate ship.',
+             '0xF8: life support module fatal failure. return to Earth not possible.'],
+      left: { text: 'back', nextInline: result }
+    },
   };
+
+  var searchScene = {
+    text: 'Search.',
+    nextInline: {
+      text: ['Database search. What would you like to search for?'],
+      right: { text: 'Personel.' }
+    }
+  };
+
+  result.right = statusCodesScene;
+  result.down =  { text: 'schematics', next: 'schematics' };
+  result.up =    searchScene;
+  result.left =  { text: 'back', next: backScene };
+
+  return result;
 }
 
 export function newGame() {
@@ -185,11 +202,11 @@ export function newGame() {
     currentCard: {
       id: 'beginning',
       text: [
-        'a terminal light blinks.',
-        'a distress signal.'
+        'A terminal light blinks.',
+        'A distress signal.'
       ],
       right: {
-        text: 'read distress',
+        text: 'Read distress.',
         next: 'first-message'
       }
     },
