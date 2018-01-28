@@ -27,18 +27,8 @@ function setNextSceneById(direction, gameState) {
 
   if (!gameState.cards[nextScene]) return false;
 
-  var lastScene = gameState.currentCard;
-
-  gameState.currentCard = {
-    id: nextScene,
-    text: gameState.cards[nextScene].text,
-    up: gameState.cards[nextScene].up,
-    down: gameState.cards[nextScene].down,
-    left: gameState.cards[nextScene].left,
-    right: gameState.cards[nextScene].right
-  };
-
-  setBackNavigation(gameState.currentCard, lastScene);
+  assignCurrentScene(gameState.cards[nextScene],
+                     gameState);
 
   return gameState;
 }
@@ -49,23 +39,28 @@ function log(message) {
               "\n====================\n");
 }
 
+function assignCurrentScene(newScene, gameState) {
+  var lastScene = gameState.currentCard;
+
+  gameState.currentCard = {
+    image: newScene.image,
+    text: newScene.text,
+    up: newScene.up,
+    down: newScene.down,
+    left: newScene.left,
+    right: newScene.right
+  };
+
+  setBackNavigation(gameState.currentCard,
+                    lastScene);
+}
+
 function setNextSceneByInline(direction, gameState) {
   var nextScene = gameState.currentCard[direction].nextInline;
 
   if (!nextScene) return false;
 
-  var lastScene = gameState.currentCard;
-
-  gameState.currentCard = {
-    id: nextScene.id,
-    text: nextScene.text,
-    up: nextScene.up,
-    down: nextScene.down,
-    left: nextScene.left,
-    right: nextScene.right
-  }
-
-  setBackNavigation(gameState.currentCard, lastScene);
+  assignCurrentScene(nextScene, gameState);
 
   return gameState;
 }
@@ -126,7 +121,6 @@ function cards() {
       text: [
         'Status: 0x09, 0xAA, 0xF8.'
       ],
-      left: { text: 'Back.', next: 'day-1.5' },
       right: { text: 'Wait.', next: 'day-2' },
       down: { text: 'Terminal.',
               nextInline: terminalScene() }
@@ -170,7 +164,6 @@ function cards() {
     },
     'day-3-message': {
       text: ['WS dead, SG SS MR ok'],
-      left: { text: 'Back.', next: 'day-3' },
       right: { text: 'Reply.', next: 'day-3-reply' },
       down: { text: 'Terminal.', nextInline: terminalScene() }
     },
@@ -195,7 +188,107 @@ function cards() {
     },
     'day-4-message': {
       text: ['Hlp fix COM! Qudrnt?'],
-      right: { text: 'Place chip in:' }
+      right: {
+        text: 'Place chip in:',
+        nextInline: {
+          text: ['Place chip in:'],
+          up:    {
+            text: ['A'],
+            nextInline: {
+              text: ['Place chip in: A'],
+              up: {
+                text: '5',
+                nextInline: {
+                  text: ['Place chip in: A5'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              right: {
+                text: '0',
+                nextInline: {
+                  text: ['Place chip in: A0'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              down: {
+                text: '3',
+                nextInline: {
+                  text: ['Place chip in: A3'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              left: { text: 'Back.' }
+            }
+          },
+          right: {
+            text: ['E'],
+            nextInline: {
+              text: ['Place chip in: E'],
+              up: {
+                text: '7',
+                nextInline: {
+                  text: ['Place chip in: E7'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              right: {
+                text: '0',
+                nextInline: {
+                  text: ['Place chip in: E0'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              down: {
+                text: '5',
+                nextInline: {
+                  text: ['Place chip in: E5'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              left: { text: 'Back.' }
+            }
+          },
+          down:  {
+            text: ['C'],
+            nextInline: {
+              text: ['Place chip in: C'],
+              up: {
+                text: '3',
+                nextInline: {
+                  text: ['Place chip in: C3'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              right: {
+                text: '0',
+                nextInline: {
+                  text: ['Place chip in: C0'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              down: {
+                text: '7',
+                nextInline: {
+                  text: ['Place chip in: C7'],
+                  right: { text: 'Send.' },
+                  left: { text: 'Back.' }
+                }
+              },
+              left: { text: 'Back.' }
+            }
+          },
+          left: { text: 'Back.' }
+        }
+      },
+      down: { text: 'Terminal.', nextInline: terminalScene() }
     }
   };
 }
@@ -235,7 +328,8 @@ function terminalScene() {
         right: {
           text: 'Communications Module.',
           nextInline: {
-            text: ['=================='],
+            image: '/images/communications-module.png',
+            text: [],
             left: { text: 'Back.' }
           }
         },

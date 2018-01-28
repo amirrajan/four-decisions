@@ -57,6 +57,12 @@ class GameContainer extends Component {
     return (<p key={text}>{text}</p>);
   }
 
+  renderImage(image) {
+    if(!image) return null;
+
+    return (<img src={image} />);
+  }
+
   renderRight(option) {
     if(!option) {
       return (
@@ -122,6 +128,7 @@ class GameContainer extends Component {
        <div className="card">
          <div className="text">
            {map(this.state.currentCard.text, this.renderText)}
+           {this.renderImage(this.state.currentCard.image)}
          </div>
        </div>
        {this.renderDown(this.state.currentCard.down)}
