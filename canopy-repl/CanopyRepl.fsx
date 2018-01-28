@@ -4,8 +4,6 @@
 #I "./FSharpModules/FSharp.Data.SqlClient/lib/net40"
 #I "./FSharpModules/Http.fs/lib/net40"
 #I "./FSharpModules/Selenium.WebDriver/lib/net40"
-#I "./FSharpModules/Selenium.Support/lib/net40"
-#I "./FSharpModules/SizSelCsZzz/lib"
 #I "./Fsharpmodules/Newtonsoft.Json/lib/net40"
 #I "./FSharpModules/canopy/lib"
 #I "./FsharpModules/Http.fs/lib/net40"
@@ -15,7 +13,6 @@
 #r "FSharp.Data.SqlClient.dll"
 #r "HttpClient.dll"
 #r "WebDriver.dll"
-#r "WebDriver.Support.dll"
 #r "HttpClient.dll"
 #r "canopy.dll"
 #r "System.Core.dll"
@@ -33,7 +30,6 @@ open reporters
 open configuration
 open OpenQA.Selenium.Firefox
 open OpenQA.Selenium
-open OpenQA.Selenium.Support.UI
 open OpenQA.Selenium.Interactions
 open System.Collections.ObjectModel
 
@@ -75,29 +71,13 @@ let names _ =
 let esc = OpenQA.Selenium.Keys.Escape
 
 openBrowser()
+
 url "http://localhost:3000"
 
-"[data-uia-todo]" << "build agile tree"
-press enter
-
-"[data-uia-todo]" << "get react scafold in place"
-press enter
-
-"[data-uia-todo]" << "es6"
-press enter
-
-displayed ".currentlyFocused"
-
-press enter
-"[data-uia-todo]" << "life2"
-press "j"
-press "c"
-press "k"
-press esc
-
-press enter
-
 reload ()
+
 quit ()
+
 clearCookies ()
+
 clearLocalStorage ()

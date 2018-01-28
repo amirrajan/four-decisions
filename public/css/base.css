@@ -2,7 +2,7 @@ body {
   font-family: monospace;
   line-height: 1.5;
   font-weight: 300;
-  font-size: 16px;
+  font-size: 14px;
   margin-left: auto;
   margin-right: auto;
   width: 1000px;
@@ -66,10 +66,9 @@ input {
 }
 
 .text {
-  width: 200px;
   height: 200px;
-  margin-left: 25px;
-  margin-top: 50px;
+  margin-left: 10px;
+  margin-top: 10px;
   overflow-x: none;
   overflow-y: none;
   position: absolute;
