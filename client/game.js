@@ -36,6 +36,8 @@ function setNextSceneById(direction, gameState) {
     right: gameState.cards[nextScene].right
   };
 
+  setBackNavigation(gameState);
+
   return gameState;
 }
 
@@ -46,7 +48,6 @@ function log(message) {
 }
 
 function setNextSceneByInline(direction, gameState) {
-  log('hodor');
   var nextScene = gameState.currentCard[direction].nextInline;
 
   if (!nextScene) return false;
@@ -60,7 +61,16 @@ function setNextSceneByInline(direction, gameState) {
     right: nextScene.right
   }
 
+  setBackNavigation(gameState);
+
   return gameState;
+}
+
+function setBackNavigation(gameState) {
+  if(gameState.currentCard.up && gameState.currentCard.up.text == 'Back.')    gameState.currentCard.up.nextInline = gameState.currentCard;
+  if(gameState.currentCard.left && gameState.currentCard.left.text == 'Back.')  gameState.currentCard.left.nextInline = gameState.currentCard;
+  if(gameState.currentCard.right && gameState.currentCard.right.text == 'Back.') gameState.currentCard.right.nextInline = gameState.currentCard;
+  if(gameState.currentCard.down && gameState.currentCard.down.text == 'Back.')  gameState.currentCard.down.nextInline = gameState.currentCard;
 }
 
 function cards() {
@@ -95,8 +105,7 @@ function cards() {
       ],
       right: { text: 'Read distress.', next: 'day-1.5-message' },
       down: { text: 'Terminal.',
-              nextInline: terminalScene('day-1.5-terminal',
-                                        'day-1.5') }
+              nextInline: terminalScene() }
     },
     'day-1.5-message': {
       text: [
@@ -105,8 +114,7 @@ function cards() {
       left: { text: 'Back.', next: 'day-1.5' },
       right: { text: 'Wait.', next: 'day-2' },
       down: { text: 'Terminal.',
-              nextInline: terminalScene('day-1.5-message-terminal',
-                                        'day-1.5-message') }
+              nextInline: terminalScene() }
     },
     'day-2': {
       text: [
@@ -129,7 +137,7 @@ function cards() {
       right: { text: 'Send reply.', next: 'day-2-reply-too-long' }
     },
     'day-2-reply-too-long': {
-      text: ['Error: Reply too long to send.',
+      text: ['ERROR: Reply too long to send. Communication module fatal failure.',
              'Please shorten to twenty characters.'],
       right: { text: '"Yes. Here. Ok? Who?"', next: 'day-2-end' }
     },
@@ -146,53 +154,81 @@ function cards() {
       right: { text: 'Read distress.', next: 'day-3-message' },
     },
     'day-3-message': {
-      text: ['Will dead. sh si ok.'],
-      left: { text: 'back', next: 'day-3' },
-      right: { text: 'reply', next: 'day-3-reply' }
+      text: ['WS dead, SG SS MR ok'],
+      left: { text: 'Back.', next: 'day-3' },
+      right: { text: 'Reply.', next: 'day-3-reply' },
+      down: { text: 'Terminal.', nextInline: terminalScene() }
     },
     'day-3-reply': {
       text: [
-        'reply to:',
-        '>mark:',
-        '>will dead. sh si ok.'
+        'Reply to:',
+        '>WS dead, SG SS MR ok'
       ],
-      right: { text: "to mark: \"sry. ship status?\"" }
+      right: { text: "\"Sry... Ship status?\"", next: 'day-3-end' }
+    },
+    'day-3-end': {
+      text: ['Message sent.',
+             'Waiting for response.'],
+      right: { text: 'Wait.', next: 'day-4' }
+    },
+    'day-4': {
+      text: [
+        'A terminal light blinks.',
+        'A distress signal.'
+      ],
+      right: { text: 'Read distress.', next: 'day-4-message' }
+    },
+    'day-4-message': {
+      text: ['Hlp fix COM! Qudrnt?'],
+      right: { text: 'Place chip in:' }
     }
   };
 }
 
-function terminalScene(id, backScene) {
-  var result = {};
-
-  result.id = id;
-
-  result.text = [
-    "light speed terminal TM:",
-    'select command.'
-  ];
-
-  var statusCodesScene = {
-    text: 'Status codes.',
-    nextInline: {
-      text: ['0x09: communication module fatal failure. message length serverely compromised.',
-             '0xAA: navigation module fatal failure. unable to navigate ship.',
-             '0xF8: life support module fatal failure. return to Earth not possible.'],
-      left: { text: 'back', nextInline: result }
+function terminalScene() {
+  var result = {
+    text: [
+      "== Light Speed Terminal® ==",
+      'Select command.'
+    ],
+    right: {
+      text: 'Status codes.',
+      nextInline: {
+        text: ['0x09: Communication module fatal failure. Message length serverely compromised.',
+               '0xAA: Navigation module fatal failure. Unable to navigate ship.',
+               '0xF8: Life support module fatal failure. Return to Earth not possible.'],
+        left: { text: 'Back.' }
+      }
     },
-  };
+    top: {
+      text: 'Search.',
+      nextInline: {
+        text: ['Database search. What would you like to search for?'],
+        right: {
+          text: 'Personel.',
+          nextInline: {
 
-  var searchScene = {
-    text: 'Search.',
-    nextInline: {
-      text: ['Database search. What would you like to search for?'],
-      right: { text: 'Personel.' }
-    }
+          }
+        },
+        left: { text: 'Back.' }
+      }
+    },
+    down: {
+      text: 'Schematics.',
+      nextInline: {
+        text: ['Select schematics to view.'],
+        right: {
+          text: 'Communications Module.',
+          nextInline: {
+            text: ['=================='],
+            left: { text: 'Back.' }
+          }
+        },
+        left: { text: 'Back.' }
+      }
+    },
+    left: { text: 'Back.' }
   };
-
-  result.right = statusCodesScene;
-  result.down =  { text: 'schematics', next: 'schematics' };
-  result.up =    searchScene;
-  result.left =  { text: 'back', next: backScene };
 
   return result;
 }
