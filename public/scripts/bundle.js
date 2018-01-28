@@ -20129,7 +20129,17 @@
 	function tick(direction, gameState) {
 	  if (!gameState.currentCard[direction]) return gameState;
 	
-	  return setNextSceneById(direction, gameState) || setNextSceneByInline(direction, gameState) || gameState;
+	  if (gameState.currentCard[direction].message) gameState.messages.push(gameState.currentCard[direction].message);
+	
+	  return setNextSceneById(direction, gameState) || setNextSceneByInline(direction, gameState) || setNextSceneByDelegate(direction, gameState) || gameState;
+	}
+	
+	function setNextSceneByDelegate(direction, gameState) {
+	  var nextDelegate = gameState.currentCard[direction].nextDelegate;
+	
+	  if (!nextDelegate) return false;
+	
+	  assignCurrentScene(nextDelegate(gameState), gameState);
 	}
 	
 	function setNextSceneById(direction, gameState) {
@@ -20189,6 +20199,80 @@
 	  }
 	}
 	
+	function getStatuses(gameState) {
+	  var timePassed = (0, _lodash.filter)(gameState.messages, function (m) {
+	    return m.match(/^wait$/);
+	  });
+	
+	  var chipDescriptions = {
+	    'nav-chip-1': ['Earth sensor is down.', 'Earth sensor is down.'],
+	    'nav-chip-2': ['Solar sails deployment is down.', 'Solar sails deployment is down.'],
+	    'nav-chip-3': ['After burner controls are down.', 'After burner controls are down.'],
+	    'nav-chip-4': ['Thrusters are down.', 'Thrusters are down.'],
+	    'message-chip-1': ['High payload communcation is down.', 'High payload communcation is operational.'],
+	    'message-chip-2': ['Stage 1 compression is down.', 'Stage 1 compression is down.'],
+	    'message-chip-3': ['Stage 2 compression is down.', 'Stage 2 compression is down.'],
+	    'life-chip-1': ['Capacity sensors are down.', 'Capacity sensors are down.']
+	  };
+	
+	  var status = [];
+	
+	  for (var key in chipDescriptions) {
+	    if (gameState.messages.includes(key)) {
+	      status.push(chipDescriptions[key][1]);
+	    } else {
+	      status.push(chipDescriptions[key][0]);
+	    }
+	  }
+	
+	  return {
+	    text: ['A terminal light blinks.', 'A distress signal.'],
+	    right: {
+	      text: 'Read distress.',
+	      nextInline: {
+	        text: status
+	      }
+	    }
+	  };
+	}
+	
+	function determineDistressMessageForChip(gameState) {
+	  var chipA5 = gameState.messages.includes('message-chip-1');
+	
+	  if (!chipA5) {
+	    return {
+	      text: ['A terminal light blinks.', 'A distress signal.'],
+	      right: {
+	        text: 'Read distress.',
+	        nextInline: {
+	          text: ["DIDN'T WORK! HELP!!"],
+	          right: chipDecisionTree(),
+	          down: { text: 'Terminal.', nextInline: terminalScene() }
+	        }
+	      }
+	    };
+	  } else {
+	    return {
+	      text: ['A terminal light blinks.', 'A distress signal.'],
+	      right: {
+	        text: 'Read distress.',
+	        nextInline: {
+	          text: ["Holy shit that worked! We can speak in full sentances now.", "Me, Simone, and Shiobhan are alive.", "Still suffering from Stasus Sickness.", "All of our systems are dark. Please advise.", "We only have ninteen circuits left.", "One was used to fix the communcations system."],
+	          right: {
+	            text: 'What are your system statuses?',
+	            nextInline: {
+	              text: ['Message sent.', 'Waiting for response.'],
+	              right: { text: 'Wait.', nextDelegate: getStatuses, message: 'wait' }
+	            }
+	          }
+	        }
+	      }
+	    };
+	  }
+	
+	  return gameState.currentCard;
+	}
+	
 	function cards() {
 	  return {
 	    'first-message': {
@@ -20202,7 +20286,7 @@
 	    },
 	    'adrenaline-injected': {
 	      text: ['Command has been sent.', 'Waiting for response.'],
-	      right: { text: 'Wait.', next: 'day-1.5' }
+	      right: { text: 'Wait.', next: 'day-1.5', message: 'wait' }
 	    },
 	    'day-1.5': {
 	      text: ['A terminal light blinks.', 'A distress signal.'],
@@ -20212,7 +20296,7 @@
 	    },
 	    'day-1.5-message': {
 	      text: ['Status: 0x09, 0xAA, 0xF8.'],
-	      right: { text: 'Wait.', next: 'day-2' },
+	      right: { text: 'Wait.', next: 'day-2', message: 'wait' },
 	      down: { text: 'Terminal.',
 	        nextInline: terminalScene() }
 	    },
@@ -20225,7 +20309,7 @@
 	      right: { text: 'Reply.', next: 'day-2-reply' }
 	    },
 	    'day-2-reply': {
-	      text: ["Yes, I'm here.", 'We thought we lost Serenity.', "It's been fifteen years.", "Who is speaking??"],
+	      text: ["Yes, I'm here.", 'We thought we lost Serenity.', "It's been twenty-three years.", "Who is speaking??"],
 	      right: { text: 'Send reply.', next: 'day-2-reply-too-long' }
 	    },
 	    'day-2-reply-too-long': {
@@ -20234,7 +20318,7 @@
 	    },
 	    'day-2-end': {
 	      text: ['Message sent.', 'Waiting for response.'],
-	      right: { text: 'Wait.', next: 'day-3' }
+	      right: { text: 'Wait.', next: 'day-3', message: 'wait' }
 	    },
 	    'day-3': {
 	      text: ['A terminal light blinks.', 'A distress signal.'],
@@ -20251,7 +20335,7 @@
 	    },
 	    'day-3-end': {
 	      text: ['Message sent.', 'Waiting for response.'],
-	      right: { text: 'Wait.', next: 'day-4' }
+	      right: { text: 'Wait.', next: 'day-4', message: 'wait' }
 	    },
 	    'day-4': {
 	      text: ['A terminal light blinks.', 'A distress signal.'],
@@ -20259,98 +20343,61 @@
 	    },
 	    'day-4-message': {
 	      text: ['Hlp fix COM! Qudrnt?'],
-	      right: {
-	        text: 'Place chip in:',
+	      right: chipDecisionTree(),
+	      down: { text: 'Terminal.', nextInline: terminalScene() }
+	    }
+	  };
+	}
+	
+	function chipDecisionTree() {
+	  return {
+	    text: 'Place chip in:',
+	    nextInline: {
+	      text: ['Place chip in:'],
+	      up: {
+	        text: ['A'],
 	        nextInline: {
-	          text: ['Place chip in:'],
+	          text: ['Place chip in: A'],
 	          up: {
-	            text: ['A'],
+	            text: '5',
 	            nextInline: {
-	              text: ['Place chip in: A'],
-	              up: {
-	                text: '5',
-	                nextInline: {
-	                  text: ['Place chip in: A5'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
+	              text: ['Place chip in: A5'],
 	              right: {
-	                text: '0',
+	                text: 'Send.',
+	                message: 'message-chip-1',
 	                nextInline: {
-	                  text: ['Place chip in: A0'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
-	              down: {
-	                text: '3',
-	                nextInline: {
-	                  text: ['Place chip in: A3'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
 	                }
 	              },
 	              left: { text: 'Back.' }
 	            }
 	          },
 	          right: {
-	            text: ['E'],
+	            text: '0',
 	            nextInline: {
-	              text: ['Place chip in: E'],
-	              up: {
-	                text: '7',
-	                nextInline: {
-	                  text: ['Place chip in: E7'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
+	              text: ['Place chip in: A0'],
 	              right: {
-	                text: '0',
+	                text: 'Send.',
+	                message: 'message-chip-A0',
 	                nextInline: {
-	                  text: ['Place chip in: E0'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
-	              down: {
-	                text: '5',
-	                nextInline: {
-	                  text: ['Place chip in: E5'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
 	                }
 	              },
 	              left: { text: 'Back.' }
 	            }
 	          },
 	          down: {
-	            text: ['C'],
+	            text: '3',
 	            nextInline: {
-	              text: ['Place chip in: C'],
-	              up: {
-	                text: '3',
-	                nextInline: {
-	                  text: ['Place chip in: C3'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
+	              text: ['Place chip in: A3'],
 	              right: {
-	                text: '0',
+	                text: 'Send.',
+	                message: 'message-chip-A3',
 	                nextInline: {
-	                  text: ['Place chip in: C0'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
-	                }
-	              },
-	              down: {
-	                text: '7',
-	                nextInline: {
-	                  text: ['Place chip in: C7'],
-	                  right: { text: 'Send.' },
-	                  left: { text: 'Back.' }
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
 	                }
 	              },
 	              left: { text: 'Back.' }
@@ -20359,7 +20406,111 @@
 	          left: { text: 'Back.' }
 	        }
 	      },
-	      down: { text: 'Terminal.', nextInline: terminalScene() }
+	      right: {
+	        text: ['E'],
+	        nextInline: {
+	          text: ['Place chip in: E'],
+	          up: {
+	            text: '7',
+	            nextInline: {
+	              text: ['Place chip in: E7'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-E7',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          right: {
+	            text: '0',
+	            nextInline: {
+	              text: ['Place chip in: E0'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-E0',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          down: {
+	            text: '5',
+	            nextInline: {
+	              text: ['Place chip in: E5'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-E5',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          left: { text: 'Back.' }
+	        }
+	      },
+	      down: {
+	        text: ['C'],
+	        nextInline: {
+	          text: ['Place chip in: C'],
+	          up: {
+	            text: '3',
+	            nextInline: {
+	              text: ['Place chip in: C3'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-C3',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          right: {
+	            text: '0',
+	            nextInline: {
+	              text: ['Place chip in: C0'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-C0',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          down: {
+	            text: '7',
+	            nextInline: {
+	              text: ['Place chip in: C7'],
+	              right: {
+	                text: 'Send.',
+	                message: 'message-chip-C7',
+	                nextInline: {
+	                  text: ['Message sent.', 'Waiting for response.'],
+	                  right: { text: 'Wait.', nextDelegate: determineDistressMessageForChip, message: 'wait' }
+	                }
+	              },
+	              left: { text: 'Back.' }
+	            }
+	          },
+	          left: { text: 'Back.' }
+	        }
+	      },
+	      left: { text: 'Back.' }
 	    }
 	  };
 	}
@@ -20416,7 +20567,8 @@
 	        next: 'first-message'
 	      }
 	    },
-	    cards: cards()
+	    cards: cards(),
+	    messages: []
 	  };
 	}
 	
