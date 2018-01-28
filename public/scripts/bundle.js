@@ -20199,20 +20199,25 @@
 	  }
 	}
 	
-	function getStatuses(gameState) {
+	function calculateLifeSupportCapacity(gameState) {
 	  var timePassed = (0, _lodash.filter)(gameState.messages, function (m) {
 	    return m.match(/^wait$/);
-	  });
+	  }).length;
+	  var monthsToReturn = 12 * 10 - timePassed;
 	
+	  return "We have " + monthsToReturn + " months of life support.";
+	}
+	
+	function getStatuses(gameState) {
 	  var chipDescriptions = {
 	    'nav-chip-1': ['Earth sensor is down.', 'Earth sensor is down.'],
 	    'nav-chip-2': ['Solar sails deployment is down.', 'Solar sails deployment is down.'],
 	    'nav-chip-3': ['After burner controls are down.', 'After burner controls are down.'],
 	    'nav-chip-4': ['Thrusters are down.', 'Thrusters are down.'],
 	    'message-chip-1': ['High payload communcation is down.', 'High payload communcation is operational.'],
-	    'message-chip-2': ['Stage 1 compression is down.', 'Stage 1 compression is down.'],
-	    'message-chip-3': ['Stage 2 compression is down.', 'Stage 2 compression is down.'],
-	    'life-chip-1': ['Capacity sensors are down.', 'Capacity sensors are down.']
+	    'message-chip-2': ['Stage 1 compression is down.', 'Stage 1 compression online.'],
+	    'message-chip-3': ['Stage 2 compression is down.', 'Stage 2 compression online.'],
+	    'life-chip-1': ['Life support capacity sensors are down.', calculateLifeSupportCapacity(gameState)]
 	  };
 	
 	  var status = [];
